@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini AI Pulse | Automated AI News Feed</title>
+    <!-- Tailwind CSS per un design moderno e ultra-veloce -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome per le icone tecnologiche -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans flex flex-col justify-between">
+
+    <!-- Intestazione / Header -->
+    <header class="border-b border-slate-900 bg-slate-950/80 backdrop-blur-md sticky top-0 z-50 py-4 px-6">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="bg-blue-600/20 text-blue-400 p-2.5 rounded-xl border border-blue-500/30">
+                    <i class="fa-solid fa-bolt text-lg animate-pulse"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
+                        GEMINI AI PULSE
+                    </h1>
+                    <p class="text-xs text-slate-400 font-medium tracking-wide uppercase">
+                        100% Automated Gatekeeper
+                    </p>
+                </div>
+            </div>
+            <!-- Badge di stato per mostrare che l'automazione è attiva -->
+            <span class="flex items-center gap-2 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs px-3 py-1.5 rounded-full font-semibold">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                Live Feed Active
+            </span>
+        </div>
+    </header>
+
+    <!-- Contenuto Principale -->
+    <main class="max-w-4xl mx-auto px-6 py-12 flex-grow w-full">
+        <!-- Pannello Informativo di Benvenuto -->
+        <div class="mb-12 p-6 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-800">
+            <h2 class="text-lg font-bold text-white mb-1 flex items-center gap-2">
+                <i class="fa-solid fa-circle-info text-blue-400"></i> About this portal
+            </h2>
+            <p class="text-slate-400 text-sm leading-relaxed">
+                This platform is entirely serverless and costs $0 to run. Every 4 hours, a secure GitHub Action retrieves global AI news feeds, passes them to <strong>Gemini 1.5 Flash</strong> to filter out clickbait and sensationalism, and translates/summarizes only high-quality, verified developments.
+            </p>
+        </div>
+
+        <!-- Sezione Titolo Feed -->
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-sm font-semibold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                <i class="fa-solid fa-newspaper text-blue-500"></i> Verified News Feed
+            </h3>
+            <span class="text-xs text-slate-500 italic">Updated automatically</span>
+        </div>
+
+        <!-- Contenitore delle Notizie Dinamiche -->
+        <div id="news-container" class="space-y-6">
+            <!-- Stato di caricamento iniziale -->
+            <div class="text-center py-16 border border-dashed border-slate-800 rounded-2xl">
+                <i class="fa-solid fa-circle-notch text-3xl text-blue-500 animate-spin mb-3"></i>
+                <p class="text-slate-400 text-sm">Querying verified database...</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Piè di pagina / Footer -->
+    <footer class="border-t border-slate-900 bg-slate-950/40 py-6 text-center text-xs text-slate-500">
+        <p>© 2026 Gemini AI Pulse. All rights reserved.</p>
+        <p class="mt-1">Powered by GitHub Actions & Google Gemini. 100% Client-Side Privacy Secured.</p>
+    </footer>
+
+    <!-- Logica di caricamento dei dati -->
+    <script>
+        // Il browser legge semplicemente il file generato dall'azione automatica
+        fetch('./news.json')
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error("Il file news.json non è ancora pronto o è vuoto.");
+                }
+                return res.json();
+            })
+            .then(data => {
+                const container = document.getElementById('news-container');
+                container.innerHTML = '';
+                
+                if (data.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center py-16 border border-dashed border-slate-800 rounded-2xl">
+                            <i class="fa-solid fa-shield-halved text-4xl text-slate-600 mb-3"></i>
+                            <p class="text-slate-400 font-medium">No updates passed the filter today.</p>
+                            <p class="text-slate-500 text-xs mt-1">Gemini successfully blocked low-quality reports or redundant rumors.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Genera dinamicamente una card per ogni notizia approvata da Gemini
+                data.forEach(item => {
+                    const card = document.createElement('article');
+                    card.className = "group p-6 bg-slate-900/40 border border-slate-800/80 rounded-2xl hover:border-blue-500/30 hover:bg-slate-900/60 transition-all duration-300 shadow-md";
+                    card.innerHTML = `
+                        <div class="flex flex-col gap-2">
+                            <div class="flex items-center gap-2">
+                                <span class="bg-blue-500/10 text-blue-400 text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider">
+                                    Verified AI News
+                                </span>
+                            </div>
+                            <h2 class="text-lg font-bold text-slate-100 group-hover:text-blue-400 transition-colors duration-200 mt-1">
+                                ${item.title}
+                            </h2>
+                            <p class="text-slate-300 text-sm leading-relaxed mt-2">
+                                ${item.summary}
+                            </p>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            })
+            .catch(error => {
+                console.error(error);
+                document.getElementById('news-container').innerHTML = `
+                    <div class="text-center py-16 border border-dashed border-red-900/50 bg-red-950/10 rounded-2xl">
+                        <i class="fa-solid fa-triangle-exclamation text-3xl text-red-500 mb-3"></i>
+                        <p class="text-red-400 font-semibold">Feed temporarily unavailable</p>
+                        <p class="text-slate-500 text-xs mt-1">The automated cron-job has not run yet. Wait for the first automation cycle or trigger it manually on GitHub.</p>
+                    </div>
+                `;
+            });
+    </script>
+</body>
+</html>
