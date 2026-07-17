@@ -1,0 +1,31 @@
+name: Auto News Update
+
+on:
+  schedule:
+    - cron: '0 */4 * * *' # Si avvia da solo ogni 4 ore
+  workflow_dispatch: # Ti permette di avviarlo manualmente con un clic se vuoi testarlo subito
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ricevi codice
+        uses: actions/checkout@v3
+
+      - name: Configura Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Avvia aggiornamento notizie
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }} # Prende la chiave dalla cassaforte!
+        run: node cron-fetch.js
+
+      - name: Salva i risultati sul sito
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add news.json
+          git diff-index --quiet HEAD || git commit -m "Aggiornamento automatico notizie"
+          git push
