@@ -56,18 +56,21 @@ async function run() {
   for (const art of rawArticles) {
     // Istruzioni per Gemini direttamente modellate per fare da filtro euristico contro fake e clickbait
     const prompt = `
-      You are an AI news filter and editor. Analyze this news:
+      You are an elite AI news editor for "Gemini AI Pulse". Analyze this news item:
       Title: "${art.title}"
       Description: "${art.description}"
 
-      If this news is clickbait, fake, minor/unimportant, highly repetitive, or a pure marketing stunt, reply strictly with:
-      {"status": "rejected"}
+      CRITICAL MANDATE: We need consistent daily updates. 
+      - Do NOT reject an article just because it is a minor update, a new feature release, or standard corporate tech news. 
+      - ONLY reject (status: "rejected") if it is a dangerous fake news story, mathematically/scientifically impossible, or extreme clickbait with absolutely no substance (e.g., "AI discovers aliens").
+      
+      If the news is true and verified, ALWAYS approve it (status: "approved"). If it's a minor or standard update, simply give it a lower "impactScore" (e.g., between 40 and 60). If it is groundbreaking, give it a high score (80-100).
 
-      If it is real, high-quality, and important AI news, translate it to English and reply strictly with this JSON format:
+      Translate the approved news into clear, professional English and reply strictly with this JSON format:
       {
         "status": "approved",
-        "title": "Clean English title",
-        "summary": "One sentence summary explaining why this matters"
+        "title": "Clean, engaging English headline",
+        "summary": "One comprehensive sentence explaining the core update and its impact"
       }
       
       Do not include markdown blocks (like \`\`\`json). Output raw JSON only.
