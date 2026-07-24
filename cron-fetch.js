@@ -3,9 +3,30 @@ const fs = require('fs');
 // Feed RSS gratuiti da cui prendere le notizie sull'AI
 const FEEDS = [
   'https://techcrunch.com/category/artificial-intelligence/feed/',
-  'https://openai.com/blog/rss.xml'
+  'https://openai.com/blog/rss.xml',
+  'https://www.wired.com/feed/category/science/latest/rss',
+  'https://venturebeat.com/category/ai/feed/',
+  'https://www.technologyreview.com/',
+  'https://www.wired.com/',
+  'https://www.venturebeat.com/',
+  'https://www.techcrunch.com/',
+  'https://www.the-decoder.com/',
+  'https://www.therundown.ai/',
+  'https://www.superhuman.ai/',
+  'https://www.blog.google/technology/ai/',
+  'https://openai.com/news/',
+  'https://www.anthropic.com/news',
+  'https://deepmind.google/discover/blog/',
+  'https://huggingface.co/blog',
+  'https://cohere.com/blog',
+  'https://www.semianalysis.com/',
+  'https://www.zdnet.com/topic/artificial-intelligence/',
+  'https://www.forbes.com/ai/',
+  'https://syncedreview.com/',
+  'https://www.analyticsinsight.net/',
+  'https://ai2day.live/',
+  'https://www.ai4business.it/'
 ];
-
 // Funzione di utilità per scaricare ed estrarre i dati dai feed RSS senza usare librerie esterne
 async function fetchRss(url) {
   try {
