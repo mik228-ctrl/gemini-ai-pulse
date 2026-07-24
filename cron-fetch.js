@@ -1,33 +1,17 @@
 const fs = require('fs');
 
-// Feed RSS gratuiti da cui prendere le notizie sull'AI
+// SOLTANTO Feed RSS validi ed effettivi (gli URL HTML semplici sono stati rimossi)
 const FEEDS = [
   'https://techcrunch.com/category/artificial-intelligence/feed/',
   'https://openai.com/blog/rss.xml',
   'https://www.wired.com/feed/category/science/latest/rss',
   'https://venturebeat.com/category/ai/feed/',
-  'https://www.technologyreview.com/',
-  'https://www.wired.com/',
-  'https://www.venturebeat.com/',
-  'https://www.techcrunch.com/',
-  'https://www.the-decoder.com/',
-  'https://www.therundown.ai/',
-  'https://www.superhuman.ai/',
-  'https://www.blog.google/technology/ai/',
-  'https://openai.com/news/',
-  'https://www.anthropic.com/news',
-  'https://deepmind.google/discover/blog/',
-  'https://huggingface.co/blog',
-  'https://cohere.com/blog',
-  'https://www.semianalysis.com/',
-  'https://www.zdnet.com/topic/artificial-intelligence/',
-  'https://www.forbes.com/ai/',
-  'https://syncedreview.com/',
-  'https://www.analyticsinsight.net/',
-  'https://ai2day.live/',
-  'https://www.ai4business.it/'
+  'https://the-decoder.com/feed/',
+  'https://blog.google/technology/ai/rss/',
+  'https://hnrss.org/newest?q=AI' // Feed dinamico di Hacker News su notizie AI
 ];
-// Funzione di utilità per scaricare ed estrarre i dati dai feed RSS senza usare librerie esterne
+
+// Funzione per scaricare ed estrarre i dati dai feed RSS
 async function fetchRss(url) {
   try {
     const res = await fetch(url);
@@ -41,23 +25,21 @@ async function fetchRss(url) {
       const title = content.match(/<title>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/title>/);
       const desc = content.match(/<description>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/description>/);
       
-      // Prendiamo al massimo 3 notizie fresche per ogni feed per non sovraccaricare le chiamate API
       if (title && items.length < 3) {
         items.push({
           title: title[1].trim(),
-          description: desc ? desc[1].replace(/<[^>]*>/g, '').slice(0, 200).trim() : ''
+          description: desc ? desc[1].replace(/<[^>]*>/g, '').slice(0, 250).trim() : ''
         });
       }
     }
     return items;
   } catch (e) {
-    console.error(`Errore nel download del feed ${url}:`, e);
+    console.error(`Errore nel download del feed ${url}:`, e.message);
     return [];
   }
 }
 
 async function run() {
-  // GitHub Actions passerà la chiave salvata in cassaforte tramite le variabili d'ambiente (process.env)
   const apiKey = process.env.GEMINI_API_KEY; 
   if (!apiKey) {
     console.error("ERRORE: La chiave GEMINI_API_KEY non è configurata!");
@@ -75,7 +57,6 @@ async function run() {
   const approved = [];
 
   for (const art of rawArticles) {
-    // Istruzioni per Gemini direttamente modellate per fare da filtro euristico contro fake e clickbait
     const prompt = `
       You are an elite AI news editor for "Gemini AI Pulse". Analyze this news item:
       Title: "${art.title}"
@@ -83,15 +64,18 @@ async function run() {
 
       CRITICAL MANDATE: We need consistent daily updates. 
       - Do NOT reject an article just because it is a minor update, a new feature release, or standard corporate tech news. 
-      - ONLY reject (status: "rejected") if it is a dangerous fake news story, mathematically/scientifically impossible, or extreme clickbait with absolutely no substance (e.g., "AI discovers aliens").
+      - ONLY reject (status: "rejected") if it is a dangerous fake news story, mathematically/scientifically impossible, or extreme clickbait with absolutely no substance.
       
-      If the news is true and verified, ALWAYS approve it (status: "approved"). If it's a minor or standard update, simply give it a lower "impactScore" (e.g., between 40 and 60). If it is groundbreaking, give it a high score (80-100).
+      If the news is true and verified, ALWAYS approve it (status: "approved").
 
       Translate the approved news into clear, professional English and reply strictly with this JSON format:
       {
         "status": "approved",
         "title": "Clean, engaging English headline",
-        "summary": "One comprehensive sentence explaining the core update and its impact"
+        "category": "One of: LLMs, Robotics, Open Source, Policy, Hardware",
+        "impactScore": 75,
+        "summary": "One comprehensive sentence explaining the core update and its impact",
+        "takeaway": "Short one-line takeaway sentence"
       }
       
       Do not include markdown blocks (like \`\`\`json). Output raw JSON only.
@@ -107,7 +91,6 @@ async function run() {
       const data = await response.json();
       let text = data.candidates[0].content.parts[0].text.trim();
       
-      // Rimuove eventuali blocchi markdown di formattazione che Gemini potrebbe inserire per errore
       text = text.replace(/```json/g, '').replace(/```/g, '').trim();
       
       const result = JSON.parse(text);
@@ -123,7 +106,7 @@ async function run() {
     }
   }
 
-  // Scrive il file news.json che verrà letto dal tuo index.html statico
+  // Scrive il file news.json direttamente nella radice
   fs.writeFileSync('news.json', JSON.stringify(approved, null, 2));
   console.log(`Processo completato! Salvate ${approved.length} notizie approvate in news.json.`);
 }
