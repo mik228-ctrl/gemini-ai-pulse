@@ -74,7 +74,7 @@
     <!-- Logica di caricamento dei dati -->
     <script>
         // Il browser legge semplicemente il file generato dall'azione automatica
-        fetch('./news.json')
+        fetch('news.json')
             .then(res => {
                 if (!res.ok) {
                     throw new Error("Il file news.json non è ancora pronto o è vuoto.");
